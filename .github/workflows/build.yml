@@ -53,7 +53,7 @@ jobs:
           PREFIX_BASE: ${{ runner.temp }}/install
           WORK_DIR: ${{ runner.temp }}/work
         run: |
-          # ANDROID_HOME la define el runner; no está en el contexto env de ${{ }}.
+          # ANDROID_HOME la define el runner; no está en el contexto env del workflow.
           export ANDROID_SDK="$ANDROID_HOME"
           export ANDROID_NDK="$ANDROID_SDK/ndk/$NDK_VERSION"
           export OPENSSL_INCLUDE="$RUNNER_TEMP/android_openssl/ssl_3/include"
