@@ -1,0 +1,106 @@
+name: Build Qt for Android (16 KB)
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [ 'v*' ]
+
+env:
+  QT_VERSION: 6.8.3
+  NDK_VERSION: 27.2.12479018
+  # Commit fijo de KDAB/android_openssl (headers de OpenSSL 3 para Qt).
+  ANDROID_OPENSSL_COMMIT: b71f1470962019bd89534a2919f5925f93bc5779
+
+jobs:
+  build:
+    name: Qt ${{ matrix.abi }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [ arm64-v8a, armeabi-v7a ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install host Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: qtmultimedia qtnetworkauth qtlottie
+          dir: ${{ runner.temp }}
+
+      - name: Install Android NDK r27c and platform android-34
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;$NDK_VERSION" "platforms;android-34" > /dev/null
+
+      - name: Fetch OpenSSL headers
+        run: |
+          git clone --filter=blob:none https://github.com/KDAB/android_openssl.git "$RUNNER_TEMP/android_openssl"
+          git -C "$RUNNER_TEMP/android_openssl" checkout "$ANDROID_OPENSSL_COMMIT"
+
+      - name: Build Qt
+        env:
+          ANDROID_SDK: ${{ env.ANDROID_HOME }}
+          QT_HOST_PATH: ${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/gcc_64
+          PREFIX_BASE: ${{ runner.temp }}/install
+          WORK_DIR: ${{ runner.temp }}/work
+        run: |
+          export ANDROID_NDK="$ANDROID_SDK/ndk/$NDK_VERSION"
+          export OPENSSL_INCLUDE="$RUNNER_TEMP/android_openssl/ssl_3/include"
+          ./build-qt-android.sh ${{ matrix.abi }}
+
+      - name: Verify 16 KB alignment
+        run: |
+          readelf="$ANDROID_HOME/ndk/$NDK_VERSION/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf"
+          bad=0
+          while IFS= read -r lib; do
+            align=$("$readelf" -lW "$lib" | awk '/LOAD/{print $NF}' | sort -u | head -1)
+            if [ "$align" != "0x4000" ] && [ "$align" != "0x10000" ]; then
+              echo "No alineada a 16 KB ($align): $lib"; bad=1
+            fi
+          done < <(find "$RUNNER_TEMP/install" -name '*.so')
+          exit $bad
+
+      - name: Package
+        env:
+          PREFIX_BASE: ${{ runner.temp }}/install
+          DIST_DIR: ${{ github.workspace }}/dist
+        run: ./package-qt-android.sh ${{ matrix.abi }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-${{ env.QT_VERSION }}-${{ matrix.abi }}-16kb
+          path: dist/*
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* install-qt-android.sh \
+            --title "Qt $QT_VERSION para Android (16 KB) $GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.md
