@@ -98,6 +98,16 @@ SysrootifyPrefix=false
 TargetSpec=android-clang
 HostSpec=
 EOF
+    # Este Qt se compiló en otra máquina: la ruta por defecto del Qt de
+    # escritorio debe apuntar al de esta (el instalador oficial hace lo mismo).
+    host_path="$(cd "$OFFICIAL/$HOST_DIR" && pwd)"
+    deps="$dest/lib/cmake/Qt6/Qt6Dependencies.cmake"
+    sed -i.bak -E \
+        -e "s|^set\(__qt_platform_initial_qt_host_path \"[^\"]*\"\)|set(__qt_platform_initial_qt_host_path \"$host_path\")|" \
+        -e "s|^set\(__qt_platform_initial_qt_host_path_cmake_dir \"[^\"]*\"\)|set(__qt_platform_initial_qt_host_path_cmake_dir \"$host_path/lib/cmake\")|" \
+        "$deps"
+    rm -f "$deps.bak"
+
     "$dest/bin/qmake" -query QT_VERSION >/dev/null \
         && echo "OK: $dest/bin/qmake -> Qt $("$dest/bin/qmake" -query QT_VERSION)"
 done
