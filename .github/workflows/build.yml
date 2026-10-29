@@ -49,11 +49,12 @@ jobs:
 
       - name: Build Qt
         env:
-          ANDROID_SDK: ${{ env.ANDROID_HOME }}
           QT_HOST_PATH: ${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/gcc_64
           PREFIX_BASE: ${{ runner.temp }}/install
           WORK_DIR: ${{ runner.temp }}/work
         run: |
+          # ANDROID_HOME la define el runner; no está en el contexto env de ${{ }}.
+          export ANDROID_SDK="$ANDROID_HOME"
           export ANDROID_NDK="$ANDROID_SDK/ndk/$NDK_VERSION"
           export OPENSSL_INCLUDE="$RUNNER_TEMP/android_openssl/ssl_3/include"
           ./build-qt-android.sh ${{ matrix.abi }}
