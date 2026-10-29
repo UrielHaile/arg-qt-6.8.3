@@ -34,7 +34,8 @@ jobs:
           host: linux
           target: desktop
           arch: linux_gcc_64
-          modules: qtmultimedia qtnetworkauth qtlottie
+          # qtshadertools aporta la herramienta host qsb.
+          modules: qtshadertools qtmultimedia qtnetworkauth qtlottie
           dir: ${{ runner.temp }}
 
       - name: Install Android NDK r27c and platform android-34

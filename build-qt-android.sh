@@ -20,6 +20,9 @@ QT_VERSION="${QT_VERSION:-6.8.3}"
 QT_MINOR="${QT_VERSION%.*}"
 ANDROID_SDK="${ANDROID_SDK:-$HOME/Library/Android/sdk}"
 ANDROID_NDK="${ANDROID_NDK:-$ANDROID_SDK/ndk/27.2.12479018}"
+# qt.toolchain.cmake (usado por qt-configure-module) da prioridad a
+# ANDROID_NDK_ROOT; si apunta a otro NDK, los módulos se compilarían con él.
+export ANDROID_NDK_ROOT="$ANDROID_NDK"
 # Qt 6.8.3 compila su código Java contra android-34 y no reconoce carpetas
 # nuevas como "android-37.0", así que esa plataforma debe estar instalada:
 #   sdkmanager "platforms;android-34"
