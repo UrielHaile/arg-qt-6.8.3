@@ -82,6 +82,12 @@ Variables útiles: `ANDROID_SDK`, `ANDROID_NDK`, `QT_HOST_PATH`,
 `OPENSSL_INCLUDE` (headers de [KDAB/android_openssl](https://github.com/KDAB/android_openssl)),
 `PREFIX_BASE`, `WORK_DIR` y `JOBS`.
 
+## Pendientes
+
+- [ ] Instalador para Windows (`install-qt-android.ps1`). Por ahora ningún
+      estudiante desarrolla en Windows; hay que escribirlo y probarlo en una
+      computadora con Windows y el Qt oficial 6.8.3 (`mingw_64` o `msvc2022_64`).
+
 ## Licencia
 
 Qt se usa bajo la licencia LGPLv3. Los binarios de los releases se compilan a
