@@ -1,7 +1,7 @@
 # arg-qt-6.8.3
 
 Qt 6.8.3 para Android compilado con librerías alineadas a páginas de 16 KB,
-para la app [INHALA](https://play.google.com/store/apps/details?id=mx.ugto.inahala)
+para la app [INAHALA](https://play.google.com/store/apps/details?id=mx.ugto.inahala)
 (proyecto ARG, Universidad de Guanajuato).
 
 ## ¿Por qué existe?
@@ -28,7 +28,7 @@ código fuente, solo con distintas opciones de compilación.
 | Backend de Qt Multimedia | FFmpeg + Android | Solo Android (sin FFmpeg) |
 | ABIs | arm64-v8a, armeabi-v7a, x86, x86_64 | arm64-v8a, armeabi-v7a |
 
-Solo incluye los módulos que usa INHALA. Para otros proyectos sigue usando el
+Solo incluye los módulos que usa INAHALA. Para otros proyectos sigue usando el
 Qt oficial.
 
 ## Instalación (macOS y Linux)
