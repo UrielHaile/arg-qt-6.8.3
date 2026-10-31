@@ -72,6 +72,8 @@ for archive in "$@"; do
             *) cp -p "$script" "$dest/bin/" ;;
         esac
     done
+    # Algunas instalaciones (p. ej. aqt) dejan estos scripts sin permiso de ejecución.
+    chmod +x "$dest/bin/"*
     cat > "$dest/bin/target_qt.conf" <<EOF
 [Paths]
 Prefix=../
